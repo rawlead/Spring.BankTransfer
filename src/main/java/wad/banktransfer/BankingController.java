@@ -4,6 +4,7 @@ import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -41,8 +42,8 @@ public class BankingController {
 
     @RequestMapping(value = "/", method = RequestMethod.POST)
     public String transfer(@RequestParam String from, @RequestParam String to, @RequestParam Integer amount) {
-        if (amount == null) {
-            return "redirect:/";
+        if (amount == null || from.equals(to)) {
+            return "redirect:/transFailed";
         }
 
         Account accountFrom = accountRepository.findByIban(from);
@@ -58,11 +59,17 @@ public class BankingController {
         accountRepository.save(accountFrom);
         accountRepository.save(accountTo);
 
-        return "redirect:/";
+        return "redirect:/transCompleted";
     }
 
-//    @RequestMapping(value = "/invalidAmount")
-//    public String wrongAmount() {
-//
-//    }
+    @RequestMapping(value = "/transCompleted", method = RequestMethod.GET)
+    public String transCompleted(Model model) {
+        model.addAttribute("transResult","Transaction has been completed! :)");
+        return list(model);
+    }
+    @RequestMapping(value = "/transFailed", method = RequestMethod.GET)
+    public String transFailed(Model model) {
+        model.addAttribute("transResult","Transaction has not been completed! :(");
+        return list(model);
+    }
 }
